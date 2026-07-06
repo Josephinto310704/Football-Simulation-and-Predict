@@ -35,28 +35,28 @@ export default function HomePage() {
     <div className="space-y-12 pb-12">
       
       {/* Hero Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-white border border-slate-200 p-8 sm:p-12 shadow-sm">
+      <div className="relative overflow-hidden rounded-3xl bg-white border border-slate-200 p-5 sm:p-8 md:p-12 shadow-sm">
         <div className="absolute top-0 right-0 -mr-16 -mt-16 w-96 h-96 bg-gradient-to-br from-blue-50 via-indigo-50 to-transparent rounded-full blur-2xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-emerald-50/60 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 max-w-3xl space-y-6">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-mono font-semibold tracking-wide">
-            <Sparkle weight="fill" className="w-3.5 h-3.5 text-blue-600" />
-            <span>PIALA DUNIA 2026 — ANALYTICAL COMMAND CENTER</span>
+            <Sparkle weight="fill" className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+            <span className="leading-tight">PIALA DUNIA 2026 — ANALYTICAL COMMAND CENTER</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
             Data-Driven Football Simulation <span className="text-blue-600">&amp; Prediction Engine</span>
           </h1>
 
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
+          <p className="text-sm sm:text-base md:text-lg text-slate-600 leading-relaxed font-normal">
             Menggantikan tebakan intuitif dengan matematika probabilistik yang dapat diaudit. Mengintegrasikan filosofi <strong className="text-slate-900 font-semibold">Moneyball Sabermetrics (PPDA &amp; xG)</strong>, model <strong className="text-slate-900 font-semibold">Dixon-Coles Poisson</strong>, dan 10.000 iterasi <strong className="text-slate-900 font-semibold">Monte Carlo</strong> untuk menganalisis babak knockout Piala Dunia 2026.
           </p>
 
-          <div className="flex flex-wrap gap-4 pt-2">
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <Link
               href="/simulator"
-              className="flex items-center gap-2 px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-sm transition-all"
+              className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-sm transition-all w-full sm:w-auto"
             >
               <Cpu className="w-4 h-4" />
               <span>Launch Match Simulator</span>
@@ -64,7 +64,7 @@ export default function HomePage() {
             </Link>
             <Link
               href="/bracket"
-              className="flex items-center gap-2 px-6 py-3.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm border border-slate-300 transition-all shadow-sm"
+              className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm border border-slate-300 transition-all shadow-sm w-full sm:w-auto"
             >
               <TreeStructure className="w-4 h-4 text-indigo-600" />
               <span>10,000 Monte Carlo Bracket</span>

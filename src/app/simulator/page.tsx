@@ -60,24 +60,24 @@ function SimulatorContent() {
     <div className="space-y-10 pb-12">
       
       {/* Header Banner */}
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="bg-white p-5 sm:p-8 rounded-3xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-mono font-bold mb-3">
-            <Cpu className="w-3.5 h-3.5" />
+            <Cpu className="w-3.5 h-3.5 shrink-0" />
             <span>DIXON-COLES POISSON ENGINE</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight">
             Head-to-Head Match Simulator
           </h1>
-          <p className="text-sm text-slate-600 mt-1">
+          <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed">
             Simulasi probabilitas pertandingan 8x8 gol berdasarkan Expected Goals (xG), pressing PPDA, dan korelasi rendah ($\rho = -0.13$).
           </p>
         </div>
 
-        <div className="flex items-center space-x-3 bg-slate-100 p-1.5 rounded-xl border border-slate-200 shrink-0">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200 shrink-0 w-full md:w-auto">
           <button
             onClick={() => setIsNeutral(true)}
-            className={`px-4 py-2 rounded-lg text-xs font-mono font-medium transition-all ${
+            className={`px-4 py-2.5 rounded-lg text-xs font-mono font-medium transition-all text-center ${
               isNeutral ? 'bg-white text-slate-900 font-bold shadow-sm border border-slate-200' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -85,7 +85,7 @@ function SimulatorContent() {
           </button>
           <button
             onClick={() => setIsNeutral(false)}
-            className={`px-4 py-2 rounded-lg text-xs font-mono font-medium transition-all ${
+            className={`px-4 py-2.5 rounded-lg text-xs font-mono font-medium transition-all text-center ${
               !isNeutral ? 'bg-white text-slate-900 font-bold shadow-sm border border-slate-200' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -96,16 +96,16 @@ function SimulatorContent() {
 
       {/* Quick Stage Matchup Selector (8 Besar QF) */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
           <label className="text-xs font-mono uppercase text-slate-500 block font-bold flex items-center gap-1.5">
-            <Lightning weight="fill" className="w-4 h-4 text-amber-500" />
+            <Lightning weight="fill" className="w-4 h-4 text-amber-500 shrink-0" />
             <span>Pilih Cepat Jadwal Duel 8 Besar (Quarter-Finals):</span>
           </label>
           <span className="text-[11px] font-mono bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-0.5 rounded font-bold">
             🔥 QF1 Terkonfirmasi 100%!
           </span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {QUARTER_FINAL_FIXTURES.map(([hId, aId], idx) => {
             const h = getTeam(hId);
             const a = getTeam(aId);
@@ -142,20 +142,23 @@ function SimulatorContent() {
       </div>
 
       {/* Team Selection Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-11 gap-6 items-center">
+      {/* Team Selection Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-11 gap-4 sm:gap-6 items-center">
         
         {/* Home Team Card */}
-        <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 border-l-4 border-l-emerald-500 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-mono font-semibold uppercase text-slate-500">Team A (Home / Venue 1)</span>
-            <span className="px-2.5 py-1 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-mono font-bold">
+        <div className="lg:col-span-5 bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 border-l-4 border-l-emerald-500 shadow-sm space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-mono font-semibold uppercase text-slate-500 truncate">Team A (Home / Venue 1)</span>
+            <span className="px-2.5 py-1 rounded bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-mono font-bold shrink-0">
               Elo: {homeTeam.elo}
             </span>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <TeamFlag isoCode={homeTeam.isoCode || homeTeam.id} name={homeTeam.name} size="2xl" />
-            <div className="flex-grow">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="shrink-0">
+              <TeamFlag isoCode={homeTeam.isoCode || homeTeam.id} name={homeTeam.name} size="2xl" />
+            </div>
+            <div className="flex-grow min-w-0">
               <select
                 value={homeTeam.id}
                 onChange={(e) => {
@@ -165,7 +168,7 @@ function SimulatorContent() {
                     setHomeTeam(t);
                   }
                 }}
-                className="w-full bg-white px-4 py-2.5 rounded-xl font-bold text-lg text-slate-900 border border-slate-300 focus:border-blue-600 focus:outline-none shadow-sm"
+                className="w-full bg-white px-3 sm:px-4 py-2.5 rounded-xl font-bold text-base sm:text-lg text-slate-900 border border-slate-300 focus:border-blue-600 focus:outline-none shadow-sm truncate"
               >
                 {TEAMS.map((t) => (
                   <option key={t.id} value={t.id} className="bg-white text-slate-900">
@@ -176,45 +179,47 @@ function SimulatorContent() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 text-xs font-mono text-center">
-            <div className="bg-slate-50 p-2 rounded-lg border border-slate-150">
-              <span className="text-slate-400 block text-[10px] font-medium">xG ATTACK</span>
-              <span className="text-emerald-700 font-bold text-sm">{homeTeam.xgAttack}</span>
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-2 pt-2 border-t border-slate-100 text-xs font-mono text-center">
+            <div className="bg-slate-50 p-1.5 sm:p-2 rounded-lg border border-slate-150">
+              <span className="text-slate-400 block text-[9px] sm:text-[10px] font-medium truncate">xG ATTACK</span>
+              <span className="text-emerald-700 font-bold text-xs sm:text-sm">{homeTeam.xgAttack}</span>
             </div>
-            <div className="bg-slate-50 p-2 rounded-lg border border-slate-150">
-              <span className="text-slate-400 block text-[10px] font-medium">PPDA PRESS</span>
-              <span className="text-blue-700 font-bold text-sm">{homeTeam.ppda}</span>
+            <div className="bg-slate-50 p-1.5 sm:p-2 rounded-lg border border-slate-150">
+              <span className="text-slate-400 block text-[9px] sm:text-[10px] font-medium truncate">PPDA PRESS</span>
+              <span className="text-blue-700 font-bold text-xs sm:text-sm">{homeTeam.ppda}</span>
             </div>
-            <div className="bg-slate-50 p-2 rounded-lg border border-slate-150">
-              <span className="text-slate-400 block text-[10px] font-medium">MONEYBALL</span>
-              <span className="text-amber-700 font-bold text-sm">{homeTeam.moneyballScore}</span>
+            <div className="bg-slate-50 p-1.5 sm:p-2 rounded-lg border border-slate-150">
+              <span className="text-slate-400 block text-[9px] sm:text-[10px] font-medium truncate">MONEYBALL</span>
+              <span className="text-amber-700 font-bold text-xs sm:text-sm">{homeTeam.moneyballScore}</span>
             </div>
           </div>
         </div>
 
         {/* Swap Button */}
-        <div className="lg:col-span-1 flex justify-center">
+        <div className="lg:col-span-1 flex justify-center py-1">
           <button
             onClick={handleSwapTeams}
             title="Swap Teams"
-            className="p-3 rounded-2xl bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-500 hover:scale-110 transition-all shadow-sm"
+            className="p-3 rounded-2xl bg-white border border-slate-200 text-slate-600 hover:text-blue-600 hover:border-blue-500 hover:scale-110 transition-all shadow-sm cursor-pointer"
           >
             <ArrowCounterClockwise className="w-6 h-6" />
           </button>
         </div>
 
         {/* Away Team Card */}
-        <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 border-l-4 border-l-blue-600 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-mono font-semibold uppercase text-slate-500">Team B (Away / Venue 2)</span>
-            <span className="px-2.5 py-1 rounded bg-blue-50 border border-blue-200 text-blue-700 text-xs font-mono font-bold">
+        <div className="lg:col-span-5 bg-white p-4 sm:p-6 rounded-2xl border border-slate-200 border-l-4 border-l-blue-600 shadow-sm space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-mono font-semibold uppercase text-slate-500 truncate">Team B (Away / Venue 2)</span>
+            <span className="px-2.5 py-1 rounded bg-blue-50 border border-blue-200 text-blue-700 text-xs font-mono font-bold shrink-0">
               Elo: {awayTeam.elo}
             </span>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <TeamFlag isoCode={awayTeam.isoCode || awayTeam.id} name={awayTeam.name} size="2xl" />
-            <div className="flex-grow">
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <div className="shrink-0">
+              <TeamFlag isoCode={awayTeam.isoCode || awayTeam.id} name={awayTeam.name} size="2xl" />
+            </div>
+            <div className="flex-grow min-w-0">
               <select
                 value={awayTeam.id}
                 onChange={(e) => {
@@ -264,23 +269,23 @@ function SimulatorContent() {
               Dihitung dari rata-rata {prediction.expectedScore.home} vs {prediction.expectedScore.away} Expected Goals.
             </p>
           </div>
-          <div className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-700">
+          <div className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-700 shrink-0">
             Variance Level: <strong className={prediction.explanation.varianceLevel === 'High' ? 'text-rose-600' : 'text-emerald-600'}>{prediction.explanation.varianceLevel}</strong>
           </div>
         </div>
 
         {/* Big Percentage Bars */}
-        <div className="grid grid-cols-3 gap-4 text-center">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-center">
           <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
-            <span className="text-xs font-mono text-emerald-800 flex items-center justify-center gap-1.5 uppercase font-semibold mb-1"><TeamFlag isoCode={homeTeam.isoCode || homeTeam.id} size="sm" /> <span>{homeTeam.name} Menang</span></span>
+            <span className="text-xs font-mono text-emerald-800 flex items-center justify-center gap-1.5 uppercase font-semibold mb-1 truncate"><TeamFlag isoCode={homeTeam.isoCode || homeTeam.id} size="sm" /> <span>{homeTeam.name} Menang</span></span>
             <span className="text-3xl font-extrabold text-emerald-700">{Math.round(prediction.homeWinProb * 100)}%</span>
           </div>
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
-            <span className="text-xs font-mono text-slate-600 block uppercase font-semibold mb-1">Seri (90 Menit)</span>
+            <span className="text-xs font-mono text-slate-600 block uppercase font-semibold mb-1 truncate">Seri (90 Menit)</span>
             <span className="text-3xl font-extrabold text-slate-700">{Math.round(prediction.drawProb * 100)}%</span>
           </div>
           <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200">
-            <span className="text-xs font-mono text-blue-800 flex items-center justify-center gap-1.5 uppercase font-semibold mb-1"><TeamFlag isoCode={awayTeam.isoCode || awayTeam.id} size="sm" /> <span>{awayTeam.name} Menang</span></span>
+            <span className="text-xs font-mono text-blue-800 flex items-center justify-center gap-1.5 uppercase font-semibold mb-1 truncate"><TeamFlag isoCode={awayTeam.isoCode || awayTeam.id} size="sm" /> <span>{awayTeam.name} Menang</span></span>
             <span className="text-3xl font-extrabold text-blue-700">{Math.round(prediction.awayWinProb * 100)}%</span>
           </div>
         </div>

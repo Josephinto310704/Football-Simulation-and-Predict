@@ -177,10 +177,10 @@ export default function BracketPage() {
             <TreeStructure className="w-3.5 h-3.5" />
             <span>MONTE CARLO SIMULATOR — 10,000 ITERATIONS</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight">
             10,000 Iteration Knockout Bracket
           </h1>
-          <p className="text-sm text-slate-600 leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
             Mensimulasikan alur turnamen 16 besar hingga final Piala Dunia 2026 ribuan kali. Menghitung probabilitas juara tiap kesebelasan sekaligus mendeteksi disparitas nilai (*Value Gap*) terhadap odds pasar.
           </p>
         </div>
@@ -230,7 +230,7 @@ export default function BracketPage() {
 
           {/* 2. Simulation Runs & Trigger Button */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-1 border-t border-slate-200/60">
-            <div className="flex items-center justify-center bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
+            <div className="flex items-center justify-center bg-white p-1 rounded-xl border border-slate-200 shadow-2xs w-full sm:w-auto">
               {[1000, 10000, 50000].map((n) => (
                 <button
                   key={n}
@@ -238,7 +238,7 @@ export default function BracketPage() {
                     setIterations(n);
                     handleRunSimulation(n, useLiveLock);
                   }}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium transition-all cursor-pointer ${
+                  className={`flex-1 sm:flex-initial px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium transition-all cursor-pointer text-center ${
                     iterations === n ? 'bg-slate-900 text-white font-bold shadow-2xs' : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
@@ -250,7 +250,7 @@ export default function BracketPage() {
             <button
               onClick={() => handleRunSimulation(iterations, useLiveLock)}
               disabled={isSimulating}
-              className="flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs font-mono shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+              className="flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs font-mono shadow-sm transition-all disabled:opacity-50 cursor-pointer w-full sm:w-auto"
             >
               <ArrowCounterClockwise className={`w-3.5 h-3.5 ${isSimulating ? 'animate-spin' : ''}`} />
               <span>{isSimulating ? 'Menghitung...' : 'Jalankan Ulang'}</span>
@@ -400,6 +400,17 @@ export default function BracketPage() {
               <span className="text-slate-300">Placeholder Menunggu</span>
             </div>
           </div>
+        </div>
+
+        {/* Mobile Swipe Notice */}
+        <div className="md:hidden flex items-center justify-between bg-indigo-50/90 border border-indigo-200 px-3.5 py-2.5 rounded-xl text-indigo-900 font-mono text-xs mb-4 shadow-sm">
+          <span className="flex items-center gap-2 font-bold">
+            <span className="animate-bounce">👇</span>
+            <span>Gulir ke Bawah untuk Lihat 4 Babak Turnamen (16 Besar smp Final)</span>
+          </span>
+          <span className="text-[10px] bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded font-bold shrink-0">
+            4 Kolom
+          </span>
         </div>
 
         {/* 4-Column Connected Tree Grid */}

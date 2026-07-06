@@ -209,25 +209,25 @@ ${report.sources ? report.sources.map(s => `• ${s}`).join('\n') : '• FotMob,
 
       {/* Navigation & Fixture Selector Panel */}
       <div className="bg-slate-50 p-5 rounded-3xl border border-slate-200/80 shadow-2xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/60">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/60">
           <span className="text-xs font-mono uppercase text-slate-500 font-bold block">
             Fase Turnamen &amp; Pemilihan Laga:
           </span>
           {/* Stage Selector Tabs (8 Besar vs 16 Besar) */}
-          <div className="flex items-center space-x-2 bg-slate-200/60 p-1 rounded-xl border border-slate-200/60 w-fit">
+          <div className="flex items-center space-x-1.5 sm:space-x-2 bg-slate-200/60 p-1 rounded-xl border border-slate-200/60 w-full sm:w-fit justify-between sm:justify-start">
             <button
               onClick={() => {
                 setSelectedStage('8_besar');
                 setSelectedPairIndex(0);
                 setNewsRefreshed(false);
               }}
-              className={`px-4 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 sm:py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 selectedStage === '8_besar'
                   ? 'bg-amber-500 text-white font-extrabold shadow-sm'
                   : 'text-slate-600 hover:text-slate-900 font-bold'
               }`}
             >
-              <span>🔥 8 Besar (Quarter-Finals)</span>
+              <span>🔥 8 Besar</span>
               <span className="bg-white/20 px-1.5 py-0.5 rounded text-[10px]">QF1</span>
             </button>
             <button
@@ -236,7 +236,7 @@ ${report.sources ? report.sources.map(s => `• ${s}`).join('\n') : '• FotMob,
                 setSelectedPairIndex(0);
                 setNewsRefreshed(false);
               }}
-              className={`px-4 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer ${
+              className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 sm:py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer text-center ${
                 selectedStage === '16_besar'
                   ? 'bg-white text-slate-900 font-bold shadow-sm border border-slate-200/80'
                   : 'text-slate-600 hover:text-slate-900 font-medium'
@@ -249,7 +249,7 @@ ${report.sources ? report.sources.map(s => `• ${s}`).join('\n') : '• FotMob,
 
         {/* Fixture Selector Tabs */}
         <div className="space-y-2.5">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {activeFixtures.map(([hId, aId], idx) => {
               const h = getTeam(hId);
               const a = getTeam(aId);
