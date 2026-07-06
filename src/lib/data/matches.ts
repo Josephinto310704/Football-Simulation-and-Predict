@@ -412,7 +412,7 @@ export function generatePreMatchReport(homeId: string, awayId: string): PreMatch
     avgCornersStr = '9.6 Corner/laga';
     avgCardsStr = '5.5 Kartu/laga (Tensi Dendam Kesumat Final 2022)';
     totalMeet = 13; hWins = 6; aWins = 3; drawsNum = 4;
-  } else if (home.stage === 'quarter_final' || away.stage === 'quarter_final') {
+  } else if (isEspMar || isEngCol || isBelNor || isArgFra) {
     contextStr = 'Laga 8 Besar Perempat Final Piala Dunia 2026';
   }
 

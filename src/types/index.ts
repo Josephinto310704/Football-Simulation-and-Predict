@@ -165,3 +165,5 @@ export interface AccuracyLog {
   brierScore: number;
   isCorrectPick: boolean;
 }
+
+export type { LiveMatchData } from '@/app/api/live-data/route';
