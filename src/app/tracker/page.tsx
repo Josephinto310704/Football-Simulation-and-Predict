@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   CheckCircle, 
   Target, 
@@ -77,13 +77,20 @@ export default function TrackerPage() {
         const updatedLogs = [...logs];
 
         for (const m of completedLive) {
-          const alreadyExists = updatedLogs.some(l => 
-            (l.homeTeam.toLowerCase().includes(m.homeTeamId) && l.awayTeam.toLowerCase().includes(m.awayTeamId)) ||
-            (l.matchId === `live_${m.matchKey}`) ||
-            (l.matchId === m.fixtureId?.toString()) ||
-            (m.matchKey === 'por_esp' && l.homeTeam.toLowerCase().includes('portugal') && l.awayTeam.toLowerCase().includes('spanyol')) ||
-            (m.matchKey === 'usa_bel' && l.homeTeam.toLowerCase().includes('amerika') && l.awayTeam.toLowerCase().includes('belgia'))
-          );
+          const alreadyExists = updatedLogs.some(l => {
+            if (l.matchId === `live_${m.matchKey}` || l.matchId === m.fixtureId?.toString()) return true;
+            const h = l.homeTeam.toLowerCase();
+            const a = l.awayTeam.toLowerCase();
+            if (m.matchKey === 'por_esp' && h.includes('portugal') && a.includes('spanyol')) return true;
+            if (m.matchKey === 'can_mar' && h.includes('kanada') && a.includes('maroko')) return true;
+            if (m.matchKey === 'mex_eng' && h.includes('meksiko') && a.includes('inggris')) return true;
+            if (m.matchKey === 'sui_col' && h.includes('swiss') && a.includes('kolombia')) return true;
+            if (m.matchKey === 'usa_bel' && h.includes('amerika') && a.includes('belgia')) return true;
+            if (m.matchKey === 'bra_nor' && h.includes('brasil') && a.includes('norwegia')) return true;
+            if (m.matchKey === 'arg_egy' && h.includes('argentina') && a.includes('mesir')) return true;
+            if (m.matchKey === 'par_fra' && h.includes('paraguay') && a.includes('prancis')) return true;
+            return false;
+          });
 
           if (!alreadyExists) {
             let pW = 0.32, pD = 0.26, pL = 0.42;
@@ -152,15 +159,53 @@ export default function TrackerPage() {
     }
   };
 
+  // Deduplicate and sort strictly from newest completed match to oldest completed match
+  const deduplicatedAndSortedLogs = useMemo(() => {
+    const seen = new Set<string>();
+    const unique: AccuracyLog[] = [];
+    for (const item of logs) {
+      const cleanHome = item.homeTeam.replace(/[\uD83C-\uDBFF\uDC00-\uDFFF]+/g, '').trim().toLowerCase();
+      const cleanAway = item.awayTeam.replace(/[\uD83C-\uDBFF\uDC00-\uDFFF]+/g, '').trim().toLowerCase();
+      const pair = [cleanHome, cleanAway].sort().join('_');
+      if (!seen.has(pair)) {
+        seen.add(pair);
+        unique.push(item);
+      }
+    }
+
+    const getOrderWeight = (log: AccuracyLog) => {
+      const h = log.homeTeam.toLowerCase();
+      const a = log.awayTeam.toLowerCase();
+      // Newest completed matches in July 2026 (16 Besar)
+      if (h.includes('portugal') && a.includes('spanyol')) return 1000; // 7 Juli 2026
+      if (h.includes('amerika') && a.includes('belgia')) return 990; // 7 Juli 2026
+      if (h.includes('meksiko') && a.includes('inggris')) return 980; // 6 Juli 2026
+      if (h.includes('brasil') && a.includes('norwegia')) return 970; // 5 Juli 2026
+      if (h.includes('kanada') && a.includes('maroko')) return 960; // 4 Juli 2026
+      if (h.includes('paraguay') && a.includes('prancis')) return 950; // 4 Juli 2026
+      if (log.stage.toLowerCase() === '16 besar') return 900;
+      // Older completed matches in June 2026 (Fase Grup) in reverse chronological order
+      if (log.matchId === 'g06') return 800;
+      if (log.matchId === 'g05') return 790;
+      if (log.matchId === 'g04') return 780;
+      if (log.matchId === 'g03') return 770;
+      if (log.matchId === 'g02') return 760;
+      if (log.matchId === 'g01') return 750;
+      return 500;
+    };
+
+    return unique.sort((a, b) => getOrderWeight(b) - getOrderWeight(a));
+  }, [logs]);
+
   // Calculate overall KPIs
-  const totalMatches = logs.length;
+  const totalMatches = deduplicatedAndSortedLogs.length;
   const avgBrier = totalMatches > 0 
-    ? (logs.reduce((acc, curr) => acc + curr.brierScore, 0) / totalMatches).toFixed(4)
+    ? (deduplicatedAndSortedLogs.reduce((acc, curr) => acc + curr.brierScore, 0) / totalMatches).toFixed(4)
     : '0.0000';
-  const correctPicks = logs.filter(l => l.isCorrectPick).length;
+  const correctPicks = deduplicatedAndSortedLogs.filter(l => l.isCorrectPick).length;
   const accuracyPct = totalMatches > 0 ? Math.round((correctPicks / totalMatches) * 100) : 0;
 
-  const filteredLogs = logs.filter(l => {
+  const filteredLogs = deduplicatedAndSortedLogs.filter(l => {
     if (filterStage === 'all') return true;
     return l.stage.toLowerCase() === filterStage.toLowerCase();
   });
@@ -283,7 +328,7 @@ export default function TrackerPage() {
               <div>
                 <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                   <ChartBar className="w-5 h-5 text-emerald-600" />
-                  <span>Log Evaluasi Prediksi vs Hasil Aktual (Historical Audit)</span>
+                  <span>Histori Pertandingan</span>
                 </h2>
                 <p className="text-xs text-slate-500 font-mono mt-0.5">
                   Rumus Brier Score: $B = \frac{1}{3} \sum (P_i - O_i)^2$. Semakin mendekati 0.0000 semakin presisi.
