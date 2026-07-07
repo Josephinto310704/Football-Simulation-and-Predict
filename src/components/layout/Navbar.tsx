@@ -14,13 +14,17 @@ import {
   X, 
   Sparkle,
   CaretDown,
-  ChartBar
+  ChartBar,
+  Heart,
+  Gift
 } from '@phosphor-icons/react';
+import DonasiModal from '@/components/DonasiModal';
 
 export default function Navbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [donasiModalOpen, setDonasiModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -135,6 +139,17 @@ export default function Navbar() {
                 </div>
               )}
             </div>
+
+            {/* Button Donasi */}
+            <div className="pl-2 border-l border-slate-200">
+              <button
+                onClick={() => setDonasiModalOpen(true)}
+                className="flex items-center space-x-2 px-3.5 py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 hover:from-rose-600 hover:via-pink-600 hover:to-amber-600 shadow-xs hover:shadow-md transition-all duration-200 group transform hover:-translate-y-0.5 active:translate-y-0"
+              >
+                <Heart weight="fill" className="w-4 h-4 text-white animate-pulse group-hover:scale-110 transition-transform" />
+                <span>Donasi</span>
+              </button>
+            </div>
           </div>
 
           {/* Mobile Menu Button */}
@@ -203,8 +218,25 @@ export default function Navbar() {
               </Link>
             );
           })}
+
+          {/* Mobile Button Donasi */}
+          <div className="pt-3 pb-1">
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setDonasiModalOpen(true);
+              }}
+              className="w-full flex items-center justify-center space-x-2 px-4 py-3 rounded-xl text-base font-bold text-white bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 shadow-md transition-all"
+            >
+              <Heart weight="fill" className="w-5 h-5 text-white animate-pulse" />
+              <span>Donasi &amp; Dukung Riset</span>
+            </button>
+          </div>
         </div>
       )}
+
+      {/* Modal Donasi Interaktif */}
+      <DonasiModal isOpen={donasiModalOpen} onClose={() => setDonasiModalOpen(false)} />
     </nav>
   );
 }
