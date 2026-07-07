@@ -23,6 +23,7 @@ import { QUARTER_FINAL_FIXTURES, getDynamicQuarterFinals } from '@/lib/data/matc
 import { predictMatch } from '@/lib/engine/poisson';
 import TeamFlag from '@/components/TeamFlag';
 import { Team, PredictionResult } from '@/types';
+import LoadingSkeleton from '@/components/LoadingSkeleton';
 
 function SimulatorContent() {
   const searchParams = useSearchParams();
@@ -242,6 +243,9 @@ function SimulatorContent() {
       </div>
 
       {/* Main Prediction Results Display */}
+      {isSimulating30Mins ? (
+        <LoadingSkeleton variant="card" rows={4} />
+      ) : (
       <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-8">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-6 border-b border-slate-200">
           <div>
@@ -317,6 +321,7 @@ function SimulatorContent() {
           </div>
         </div>
       </div>
+      )}
 
       {/* T-30 MINS KICKOFF PROTOCOL CARD */}
       <div className="bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 p-6 sm:p-8 rounded-3xl border border-indigo-500/30 text-white shadow-xl space-y-5">

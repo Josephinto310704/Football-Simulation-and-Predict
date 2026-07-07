@@ -18,12 +18,15 @@ import { INITIAL_ACCURACY_LOGS } from '@/lib/data/matches';
 import { calculateBrierScore } from '@/lib/engine/elo';
 import { AccuracyLog } from '@/types';
 import { renderFlagText } from '@/components/TeamFlag';
+import LoadingSkeleton from '@/components/LoadingSkeleton';
+import ErrorFallback from '@/components/ErrorFallback';
 
 export default function TrackerPage() {
   const [logs, setLogs] = useState<AccuracyLog[]>(INITIAL_ACCURACY_LOGS);
   const [filterStage, setFilterStage] = useState<string>('all');
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<boolean>(false);
 
   // Load from localStorage on mount & auto-sync live data silently
   useEffect(() => {
@@ -59,8 +62,11 @@ export default function TrackerPage() {
 
   const handleRefreshLiveData = async (silentArg?: boolean | any) => {
     const silent = typeof silentArg === 'boolean' ? silentArg : false;
-    if (!silent) setIsRefreshing(true);
-    if (!silent) setSyncStatus(null);
+    if (!silent) {
+      setIsRefreshing(true);
+      setApiError(false);
+      setSyncStatus(null);
+    }
     try {
       const res = await fetch('/api/live-data');
       const json = await res.json();
@@ -135,8 +141,12 @@ export default function TrackerPage() {
           }
         }
       }
+      if (!silent) setApiError(false);
     } catch (err) {
-      if (!silent) setSyncStatus('⚠️ Gagal terhubung ke server live data. Silakan coba beberapa saat lagi.');
+      if (!silent) {
+        setApiError(true);
+        setSyncStatus('⚠️ Gagal terhubung ke server live data. Silakan coba beberapa saat lagi.');
+      }
     } finally {
       if (!silent) setIsRefreshing(false);
     }
@@ -193,164 +203,177 @@ export default function TrackerPage() {
         </div>
       )}
 
-      {/* KPI METRICS STRIP */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 border-l-4 border-l-emerald-500 shadow-sm space-y-2">
-          <div className="flex items-center justify-between text-xs font-mono text-slate-500 uppercase font-bold">
-            <span>Rata-rata Brier Score</span>
-            <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-              TARGET &lt; 0.20
-            </span>
-          </div>
-          <div className="text-4xl font-extrabold text-slate-900 font-mono">
-            {avgBrier}
-          </div>
-          <p className="text-xs text-emerald-700 flex items-center gap-1 font-semibold">
-            <CheckCircle className="w-3.5 h-3.5" />
-            <span>Kualitas Kalibrasi Sangat Tinggi (Lolos Audit)</span>
-          </p>
-        </div>
+      {apiError && (
+        <ErrorFallback
+          title="Gagal mengambil data simulasi terbaru"
+          message="Koneksi ke server API tertunda, kuota tercapai, atau jaringan terputus. Sistem mengaktifkan perlindungan fallback agar data lokal Anda tetap aman dan antarmuka tidak rusak."
+          onRetry={() => handleRefreshLiveData(false)}
+          retryLabel="Coba Sinkronisasi Ulang"
+        />
+      )}
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 border-l-4 border-l-blue-600 shadow-sm space-y-2">
-          <div className="flex items-center justify-between text-xs font-mono text-slate-500 uppercase font-bold">
-            <span>Akurasi Prediksi Hasil</span>
-            <span className="text-blue-700 font-bold bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-              TARGET &gt; 55%
-            </span>
-          </div>
-          <div className="text-4xl font-extrabold text-slate-900 font-mono">
-            {accuracyPct}% <span className="text-sm font-normal text-slate-500">({correctPicks}/{totalMatches})</span>
-          </div>
-          <p className="text-xs text-blue-700 flex items-center gap-1 font-semibold">
-            <TrendUp className="w-3.5 h-3.5" />
-            <span>Melampaui baseline tebakan acak bandar (33.3%)</span>
-          </p>
-        </div>
+      {isRefreshing ? (
+        <LoadingSkeleton variant="full" rows={6} />
+      ) : (
+        <>
+          {/* KPI METRICS STRIP */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 border-l-4 border-l-emerald-500 shadow-sm space-y-2">
+              <div className="flex items-center justify-between text-xs font-mono text-slate-500 uppercase font-bold">
+                <span>Rata-rata Brier Score</span>
+                <span className="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  TARGET &lt; 0.20
+                </span>
+              </div>
+              <div className="text-4xl font-extrabold text-slate-900 font-mono">
+                {avgBrier}
+              </div>
+              <p className="text-xs text-emerald-700 flex items-center gap-1 font-semibold">
+                <CheckCircle className="w-3.5 h-3.5" />
+                <span>Kualitas Kalibrasi Sangat Tinggi (Lolos Audit)</span>
+              </p>
+            </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 border-l-4 border-l-amber-500 shadow-sm space-y-2">
-          <div className="flex items-center justify-between text-xs font-mono text-slate-500 uppercase font-bold">
-            <span>Total Sampel Evaluasi</span>
-            <span className="text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-              PIALA DUNIA 2026
-            </span>
-          </div>
-          <div className="text-4xl font-extrabold text-slate-900 font-mono">
-            {totalMatches} <span className="text-base font-normal text-slate-500">Pertandingan</span>
-          </div>
-          <p className="text-xs text-slate-500 flex items-center gap-1 font-medium">
-            <Pulse className="w-3.5 h-3.5 text-amber-600" />
-            <span>Diupdate otomatis setelah tiap laga 16 besar selesai</span>
-          </p>
-        </div>
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 border-l-4 border-l-blue-600 shadow-sm space-y-2">
+              <div className="flex items-center justify-between text-xs font-mono text-slate-500 uppercase font-bold">
+                <span>Akurasi Prediksi Hasil</span>
+                <span className="text-blue-700 font-bold bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                  TARGET &gt; 55%
+                </span>
+              </div>
+              <div className="text-4xl font-extrabold text-slate-900 font-mono">
+                {accuracyPct}% <span className="text-sm font-normal text-slate-500">({correctPicks}/{totalMatches})</span>
+              </div>
+              <p className="text-xs text-blue-700 flex items-center gap-1 font-semibold">
+                <TrendUp className="w-3.5 h-3.5" />
+                <span>Melampaui baseline tebakan acak bandar (33.3%)</span>
+              </p>
+            </div>
 
-      </div>
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 border-l-4 border-l-amber-500 shadow-sm space-y-2">
+              <div className="flex items-center justify-between text-xs font-mono text-slate-500 uppercase font-bold">
+                <span>Total Sampel Evaluasi</span>
+                <span className="text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                  PIALA DUNIA 2026
+                </span>
+              </div>
+              <div className="text-4xl font-extrabold text-slate-900 font-mono">
+                {totalMatches} <span className="text-base font-normal text-slate-500">Pertandingan</span>
+              </div>
+              <p className="text-xs text-slate-500 flex items-center gap-1 font-medium">
+                <Pulse className="w-3.5 h-3.5 text-amber-600" />
+                <span>Diupdate otomatis setelah tiap laga 16 besar selesai</span>
+              </p>
+            </div>
 
-
-
-      {/* HISTORICAL ACCURACY AUDIT TABLE */}
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-              <ChartBar className="w-5 h-5 text-emerald-600" />
-              <span>Log Evaluasi Prediksi vs Hasil Aktual (Historical Audit)</span>
-            </h2>
-            <p className="text-xs text-slate-500 font-mono mt-0.5">
-              Rumus Brier Score: $B = \frac{1}{3} \sum (P_i - O_i)^2$. Semakin mendekati 0.0000 semakin presisi.
-            </p>
           </div>
 
-          {/* Stage Filters */}
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-mono">
-            {[
-              { id: 'all', label: 'Semua Laga' },
-              { id: '16 besar', label: '16 Besar' },
-              { id: 'fase grup', label: 'Fase Grup' },
-            ].map(f => (
-              <button
-                key={f.id}
-                onClick={() => setFilterStage(f.id)}
-                className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
-                  filterStage === f.id ? 'bg-white text-slate-900 font-bold shadow-sm border border-slate-200' : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-        </div>
+          {/* HISTORICAL ACCURACY AUDIT TABLE */}
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <ChartBar className="w-5 h-5 text-emerald-600" />
+                  <span>Log Evaluasi Prediksi vs Hasil Aktual (Historical Audit)</span>
+                </h2>
+                <p className="text-xs text-slate-500 font-mono mt-0.5">
+                  Rumus Brier Score: $B = \frac{1}{3} \sum (P_i - O_i)^2$. Semakin mendekati 0.0000 semakin presisi.
+                </p>
+              </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-mono uppercase text-slate-600 font-bold">
-                <th className="py-3 px-4">Babak</th>
-                <th className="py-3 px-4">Pertandingan</th>
-                <th className="py-3 px-4 text-center">Prediksi (Win/Draw/Loss)</th>
-                <th className="py-3 px-4 text-center">Hasil Aktual</th>
-                <th className="py-3 px-4 text-center">Skor</th>
-                <th className="py-3 px-4 text-right">Brier Score</th>
-                <th className="py-3 px-4 text-center">Status Prediksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-sm font-mono">
-              {filteredLogs.map((l) => {
-                const isExcellentBrier = l.brierScore < 0.15;
-                const isGoodBrier = l.brierScore < 0.20;
+              {/* Stage Filters */}
+              <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-mono">
+                {[
+                  { id: 'all', label: 'Semua Laga' },
+                  { id: '16 besar', label: '16 Besar' },
+                  { id: 'fase grup', label: 'Fase Grup' },
+                ].map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => setFilterStage(f.id)}
+                    className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+                      filterStage === f.id ? 'bg-white text-slate-900 font-bold shadow-sm border border-slate-200' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-                return (
-                  <tr key={l.matchId} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-3.5 px-4 text-xs text-slate-500 font-semibold">
-                      {l.stage}
-                    </td>
-                    <td className="py-3.5 px-4 font-bold text-slate-900">
-                      <span className="inline-flex items-center gap-1">{renderFlagText(l.homeTeam, 'sm')}</span>
-                      <span className="text-slate-400 mx-1.5 inline-block">vs</span>
-                      <span className="inline-flex items-center gap-1">{renderFlagText(l.awayTeam, 'sm')}</span>
-                    </td>
-                    <td className="py-3.5 px-4 text-center text-xs">
-                      <span className="text-emerald-700 font-bold">{Math.round(l.predictedProb.win * 100)}%</span>
-                      <span className="text-slate-300 mx-1">/</span>
-                      <span className="text-slate-600">{Math.round(l.predictedProb.draw * 100)}%</span>
-                      <span className="text-slate-300 mx-1">/</span>
-                      <span className="text-blue-700 font-bold">{Math.round(l.predictedProb.loss * 100)}%</span>
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <span className={`px-2.5 py-0.5 rounded text-xs uppercase font-bold ${
-                        l.actualResult === 'win' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
-                        l.actualResult === 'loss' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
-                        'bg-slate-100 text-slate-700 border border-slate-200'
-                      }`}>
-                        {l.actualResult === 'win' ? 'Home Win' : l.actualResult === 'loss' ? 'Away Win' : 'Draw'}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-center font-extrabold text-slate-900">
-                      {l.actualScore}
-                    </td>
-                    <td className="py-3.5 px-4 text-right font-extrabold">
-                      <span className={isExcellentBrier ? 'text-emerald-700' : isGoodBrier ? 'text-blue-700' : 'text-rose-700'}>
-                        {l.brierScore.toFixed(4)}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      {l.isCorrectPick ? (
-                        <span className="inline-flex items-center gap-1 text-emerald-700 text-xs font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-                          <CheckCircle className="w-3.5 h-3.5" /> Correct
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-rose-700 text-xs font-bold bg-rose-50 px-2.5 py-1 rounded-full border border-rose-200">
-                          <Warning className="w-3.5 h-3.5" /> Upset / Miss
-                        </span>
-                      )}
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-mono uppercase text-slate-600 font-bold">
+                    <th className="py-3 px-4">Babak</th>
+                    <th className="py-3 px-4">Pertandingan</th>
+                    <th className="py-3 px-4 text-center">Prediksi (Win/Draw/Loss)</th>
+                    <th className="py-3 px-4 text-center">Hasil Aktual</th>
+                    <th className="py-3 px-4 text-center">Skor</th>
+                    <th className="py-3 px-4 text-right">Brier Score</th>
+                    <th className="py-3 px-4 text-center">Status Prediksi</th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-sm font-mono">
+                  {filteredLogs.map((l) => {
+                    const isExcellentBrier = l.brierScore < 0.15;
+                    const isGoodBrier = l.brierScore < 0.20;
+
+                    return (
+                      <tr key={l.matchId} className="hover:bg-slate-50 transition-colors">
+                        <td className="py-3.5 px-4 text-xs text-slate-500 font-semibold">
+                          {l.stage}
+                        </td>
+                        <td className="py-3.5 px-4 font-bold text-slate-900">
+                          <span className="inline-flex items-center gap-1">{renderFlagText(l.homeTeam, 'sm')}</span>
+                          <span className="text-slate-400 mx-1.5 inline-block">vs</span>
+                          <span className="inline-flex items-center gap-1">{renderFlagText(l.awayTeam, 'sm')}</span>
+                        </td>
+                        <td className="py-3.5 px-4 text-center text-xs">
+                          <span className="text-emerald-700 font-bold">{Math.round(l.predictedProb.win * 100)}%</span>
+                          <span className="text-slate-300 mx-1">/</span>
+                          <span className="text-slate-600">{Math.round(l.predictedProb.draw * 100)}%</span>
+                          <span className="text-slate-300 mx-1">/</span>
+                          <span className="text-blue-700 font-bold">{Math.round(l.predictedProb.loss * 100)}%</span>
+                        </td>
+                        <td className="py-3.5 px-4 text-center">
+                          <span className={`px-2.5 py-0.5 rounded text-xs uppercase font-bold ${
+                            l.actualResult === 'win' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                            l.actualResult === 'loss' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                            'bg-slate-100 text-slate-700 border border-slate-200'
+                          }`}>
+                            {l.actualResult === 'win' ? 'Home Win' : l.actualResult === 'loss' ? 'Away Win' : 'Draw'}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-center font-extrabold text-slate-900">
+                          {l.actualScore}
+                        </td>
+                        <td className="py-3.5 px-4 text-right font-extrabold">
+                          <span className={isExcellentBrier ? 'text-emerald-700' : isGoodBrier ? 'text-blue-700' : 'text-rose-700'}>
+                            {l.brierScore.toFixed(4)}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-center">
+                          {l.isCorrectPick ? (
+                            <span className="inline-flex items-center gap-1 text-emerald-700 text-xs font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                              <CheckCircle className="w-3.5 h-3.5" /> Correct
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-rose-700 text-xs font-bold bg-rose-50 px-2.5 py-1 rounded-full border border-rose-200">
+                              <Warning className="w-3.5 h-3.5" /> Upset / Miss
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
 
     </div>
   );

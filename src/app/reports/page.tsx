@@ -25,6 +25,8 @@ import { getTeam } from '@/lib/data/teams';
 import { PreMatchReport } from '@/types';
 import TeamFlag, { renderFlagText } from '@/components/TeamFlag';
 import type { LiveMatchData } from '@/app/api/live-data/route';
+import LoadingSkeleton from '@/components/LoadingSkeleton';
+import ErrorFallback from '@/components/ErrorFallback';
 
 export default function ReportsPage() {
   const [selectedStage, setSelectedStage] = useState<'8_besar' | '16_besar'>('8_besar');
@@ -35,6 +37,7 @@ export default function ReportsPage() {
   const [liveData, setLiveData] = useState<LiveMatchData[]>([]);
   const [liveDataSource, setLiveDataSource] = useState<string>('');
   const [isFetchingLive, setIsFetchingLive] = useState<boolean>(true);
+  const [apiError, setApiError] = useState<boolean>(false);
 
   // Fetch live match data from API Route on mount and every 5 minutes
   useEffect(() => {
@@ -60,15 +63,18 @@ export default function ReportsPage() {
 
   const handleRefreshNews = async () => {
     setIsRefreshingNews(true);
+    setApiError(false);
     try {
       const res = await fetch('/api/live-data');
       const json = await res.json();
       if (json && Array.isArray(json.matches)) {
         setLiveData(json.matches);
         setLiveDataSource(json.source);
+      } else {
+        setApiError(true);
       }
     } catch {
-      // silently fail
+      setApiError(true);
     } finally {
       setIsRefreshingNews(false);
       setNewsRefreshed(true);
@@ -290,7 +296,19 @@ ${report.sources ? report.sources.map(s => `• ${s}`).join('\n') : '• FotMob,
         </div>
       </div>
 
+      {apiError && (
+        <ErrorFallback
+          title="Gagal sinkronisasi data live"
+          message="Koneksi ke server API tertunda atau batas kuota tercapai. Arsitektur fallback aktif agar laporan analisis tetap utuh menggunakan database statistik resmi FIFA."
+          onRetry={handleRefreshNews}
+          retryLabel="Coba Sinkronisasi Live"
+        />
+      )}
+
       {/* MAIN REPORT DOCUMENT DISPLAY */}
+      {isRefreshingNews ? (
+        <LoadingSkeleton variant="table" rows={8} />
+      ) : (
       <div className="bg-white p-6 sm:p-10 rounded-3xl border border-slate-200 shadow-md space-y-10 relative">
 
         {/* 1. RINGKASAN PERTANDINGAN */}
@@ -753,6 +771,7 @@ ${report.sources ? report.sources.map(s => `• ${s}`).join('\n') : '• FotMob,
         </div>
 
       </div>
+      )}
 
     </div>
   );
