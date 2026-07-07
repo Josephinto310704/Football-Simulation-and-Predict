@@ -20,7 +20,7 @@ import {
   FirstAid,
   ArrowCounterClockwise
 } from '@phosphor-icons/react';
-import { ROUND_OF_16_FIXTURES, QUARTER_FINAL_FIXTURES, MATCHES, generatePreMatchReport } from '@/lib/data/matches';
+import { ROUND_OF_16_FIXTURES, QUARTER_FINAL_FIXTURES, MATCHES, generatePreMatchReport, getDynamicQuarterFinalPairs } from '@/lib/data/matches';
 import { getTeam } from '@/lib/data/teams';
 import { PreMatchReport } from '@/types';
 import TeamFlag, { renderFlagText } from '@/components/TeamFlag';
@@ -75,7 +75,7 @@ export default function ReportsPage() {
     }
   };
 
-  const activeFixtures = selectedStage === '8_besar' ? QUARTER_FINAL_FIXTURES : ROUND_OF_16_FIXTURES;
+  const activeFixtures = selectedStage === '8_besar' ? getDynamicQuarterFinalPairs() : ROUND_OF_16_FIXTURES;
   const [homeId, awayId] = activeFixtures[selectedPairIndex] || activeFixtures[0];
   const report: PreMatchReport | null = generatePreMatchReport(homeId, awayId);
 

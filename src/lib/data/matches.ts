@@ -19,9 +19,69 @@ export const ROUND_OF_16_FIXTURES: [string, string][] = [
 export const QUARTER_FINAL_FIXTURES: [string, string][] = [
   ['esp', 'mar'], // QF1: Spanyol vs Maroko (Terkonfirmasi 100%!)
   ['eng', 'col'], // QF2: Inggris vs Kolombia (Proyeksi Unggulan)
-  ['bel', 'nor'], // QF3: Belgia vs Norwegia (Proyeksi Unggulan)
+  ['bel', 'nor'], // QF3: Belgia vs Norwegia (Terkonfirmasi 100%!)
   ['arg', 'fra'], // QF4: Argentina vs Prancis (Proyeksi Unggulan)
 ];
+
+export interface QFFixtureInfo {
+  homeId: string;
+  awayId: string;
+  isConfirmed: boolean;
+  label: string;
+}
+
+export function getDynamicQuarterFinals(): QFFixtureInfo[] {
+  const r16Pairs = ROUND_OF_16_FIXTURES;
+  const defaultWinners = ['esp', 'mar', 'eng', 'col', 'bel', 'nor', 'arg', 'fra'];
+  
+  const getWinner = (pair: [string, string], defaultWinner: string): { id: string; completed: boolean } => {
+    const [hId, aId] = pair;
+    const match = MATCHES.find(m => (m.homeTeamId === hId && m.awayTeamId === aId) || (m.homeTeamId === aId && m.awayTeamId === hId));
+    if (match && match.status === 'completed' && match.homeScore !== undefined && match.awayScore !== undefined) {
+      return {
+        id: match.homeScore > match.awayScore ? match.homeTeamId : match.awayTeamId,
+        completed: true
+      };
+    }
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('wc2026_accuracy_logs_v3');
+        if (saved) {
+          const logs = JSON.parse(saved);
+          const found = logs.find((l: any) => 
+            (l.homeTeam.toLowerCase().includes(hId) || l.awayTeam.toLowerCase().includes(hId)) &&
+            (l.homeTeam.toLowerCase().includes(aId) || l.awayTeam.toLowerCase().includes(aId))
+          );
+          if (found && found.actualResult) {
+            return {
+              id: found.actualResult === 'win' ? hId : (found.actualResult === 'loss' ? aId : defaultWinner),
+              completed: true
+            };
+          }
+        }
+      } catch (e) {}
+    }
+    return { id: defaultWinner, completed: false };
+  };
+
+  const qfList: QFFixtureInfo[] = [];
+  for (let i = 0; i < 4; i++) {
+    const w1 = getWinner(r16Pairs[i * 2], defaultWinners[i * 2]);
+    const w2 = getWinner(r16Pairs[i * 2 + 1], defaultWinners[i * 2 + 1]);
+    const isConfirmed = w1.completed && w2.completed;
+    qfList.push({
+      homeId: w1.id,
+      awayId: w2.id,
+      isConfirmed,
+      label: isConfirmed ? `★ QF${i + 1} Terkonfirmasi` : `QF${i + 1} Proyeksi`
+    });
+  }
+  return qfList;
+}
+
+export function getDynamicQuarterFinalPairs(): [string, string][] {
+  return getDynamicQuarterFinals().map(qf => [qf.homeId, qf.awayId]);
+}
 
 // Scheduled and Completed Match database (Based on footballdata.io API season 618 data)
 export const MATCHES: Match[] = [

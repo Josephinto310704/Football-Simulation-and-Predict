@@ -19,7 +19,7 @@ import {
   FirstAid
 } from '@phosphor-icons/react';
 import { TEAMS, getTeam } from '@/lib/data/teams';
-import { QUARTER_FINAL_FIXTURES } from '@/lib/data/matches';
+import { QUARTER_FINAL_FIXTURES, getDynamicQuarterFinals } from '@/lib/data/matches';
 import { predictMatch } from '@/lib/engine/poisson';
 import TeamFlag from '@/components/TeamFlag';
 import { Team, PredictionResult } from '@/types';
@@ -28,6 +28,8 @@ function SimulatorContent() {
   const searchParams = useSearchParams();
   const initialHome = searchParams.get('home') || 'esp';
   const initialAway = searchParams.get('away') || 'mar';
+  const qfFixtures = getDynamicQuarterFinals();
+  const confirmedCount = qfFixtures.filter(q => q.isConfirmed).length;
 
   const [homeTeam, setHomeTeam] = useState<Team>(() => getTeam(initialHome) || TEAMS[1]);
   const [awayTeam, setAwayTeam] = useState<Team>(() => getTeam(initialAway) || TEAMS[0]);
@@ -83,16 +85,17 @@ function SimulatorContent() {
             <Lightning weight="fill" className="w-4 h-4 text-amber-500 shrink-0" />
             <span>Pilih Cepat Jadwal Duel 8 Besar (Quarter-Finals):</span>
           </label>
-          <span className="text-[11px] font-mono bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-0.5 rounded font-bold">
-            🔥 QF1 Terkonfirmasi 100%!
+          <span className="text-[11px] font-mono bg-emerald-50 text-emerald-800 border border-emerald-300 px-3 py-1 rounded-full font-bold flex items-center gap-1.5 shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>🔥 {confirmedCount} / 4 Laga 8 Besar Terkonfirmasi Resmi!</span>
           </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {QUARTER_FINAL_FIXTURES.map(([hId, aId], idx) => {
-            const h = getTeam(hId);
-            const a = getTeam(aId);
+          {qfFixtures.map((qf, idx) => {
+            const h = getTeam(qf.homeId);
+            const a = getTeam(qf.awayId);
             if (!h || !a) return null;
-            const isSelected = homeTeam.id === hId && awayTeam.id === aId;
+            const isSelected = homeTeam.id === qf.homeId && awayTeam.id === qf.awayId;
 
             return (
               <button
@@ -113,9 +116,9 @@ function SimulatorContent() {
                   <span className="flex items-center gap-1"><TeamFlag isoCode={a.isoCode || a.id} name={a.name} size="sm" /> <span>{a.code}</span></span>
                 </div>
                 <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold shrink-0 ml-1 ${
-                  idx === 0 ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200'
+                  qf.isConfirmed ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs' : 'bg-slate-100 text-slate-600 border border-slate-200'
                 }`}>
-                  {idx === 0 ? '★ QF1' : `QF${idx + 1}`}
+                  {qf.isConfirmed ? `★ QF${idx + 1}` : `QF${idx + 1}`}
                 </span>
               </button>
             );
@@ -123,7 +126,6 @@ function SimulatorContent() {
         </div>
       </div>
 
-      {/* Team Selection Section */}
       {/* Team Selection Section */}
       <div className="grid grid-cols-1 lg:grid-cols-11 gap-4 sm:gap-6 items-center">
         
