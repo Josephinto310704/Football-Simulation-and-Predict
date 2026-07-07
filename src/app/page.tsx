@@ -141,10 +141,10 @@ export default function HomePage() {
         </div>
 
         {/* Teams and Probabilities */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 py-8 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 py-8 items-center">
           
           {/* Spanyol */}
-          <div className="flex flex-col items-center lg:items-start text-center lg:text-left space-y-2">
+          <div className="lg:col-span-3 flex flex-col items-center lg:items-start text-center lg:text-left space-y-2">
             <div className="flex items-center gap-3">
               <TeamFlag isoCode={esp.isoCode || esp.id} name={esp.name} size="xl" />
               <div>
@@ -160,7 +160,7 @@ export default function HomePage() {
           </div>
 
           {/* VS & Probability Bar */}
-          <div className="space-y-4">
+          <div className="lg:col-span-6 space-y-4 px-2">
             <div className="flex items-center justify-between text-xs font-mono font-bold">
               <span className="text-red-700">ESP WIN: {Math.round(prdMatchPrediction.homeWinProb * 100)}%</span>
               <span className="text-slate-500">DRAW: {Math.round(prdMatchPrediction.drawProb * 100)}%</span>
@@ -186,15 +186,17 @@ export default function HomePage() {
               />
             </div>
 
-            <div className="text-center">
-              <span className="text-[11px] font-mono text-slate-600 bg-slate-50 px-3 py-1 rounded-full border border-slate-200 font-medium">
-                Skenario Skor Paling Mungkin: <strong className="text-slate-900 font-bold">1-0, 0-0, 0-1 (Duel Bertahan)</strong>
-              </span>
+            <div className="flex justify-center pt-1">
+              <div className="inline-flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-3.5 py-1.5 rounded-xl bg-slate-100/80 border border-slate-200 text-xs font-mono text-slate-700 shadow-2xs">
+                <span className="text-slate-500 font-semibold">Skor Terpopuler:</span>
+                <span className="bg-white px-2.5 py-0.5 rounded-md border border-slate-200 text-slate-900 font-bold shadow-2xs">1-0, 0-0, 0-1</span>
+                <span className="text-amber-700 font-bold">(Duel Bertahan)</span>
+              </div>
             </div>
           </div>
 
           {/* Maroko */}
-          <div className="flex flex-col items-center lg:items-end text-center lg:text-right space-y-2">
+          <div className="lg:col-span-3 flex flex-col items-center lg:items-end text-center lg:text-right space-y-2">
             <div className="flex items-center flex-row-reverse lg:flex-row gap-3">
               <div>
                 <h3 className="text-2xl font-bold text-slate-900">{mar.name}</h3>
