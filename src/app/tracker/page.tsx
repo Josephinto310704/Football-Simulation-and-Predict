@@ -60,7 +60,8 @@ export default function TrackerPage() {
     }
   }, [logs]);
 
-  const handleRefreshLiveData = async (silent = false) => {
+  const handleRefreshLiveData = async (silentArg?: boolean | any) => {
+    const silent = typeof silentArg === 'boolean' ? silentArg : false;
     if (!silent) setIsRefreshing(true);
     if (!silent) setSyncStatus(null);
     try {
@@ -214,7 +215,7 @@ export default function TrackerPage() {
 
         <div className="flex flex-wrap items-center gap-3">
           <button
-            onClick={handleRefreshLiveData}
+            onClick={() => handleRefreshLiveData(false)}
             disabled={isRefreshing}
             className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-sm transition-all shrink-0 cursor-pointer disabled:opacity-50"
           >
