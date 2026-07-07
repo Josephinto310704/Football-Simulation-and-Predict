@@ -6,13 +6,11 @@ import {
   Target, 
   TrendUp, 
   ShieldCheck, 
-  PlusCircle, 
   Warning, 
   Pulse, 
   Medal, 
   ChartBar, 
   Funnel,
-  XCircle,
   Question,
   ArrowCounterClockwise
 } from '@phosphor-icons/react';
@@ -24,7 +22,6 @@ import { renderFlagText } from '@/components/TeamFlag';
 export default function TrackerPage() {
   const [logs, setLogs] = useState<AccuracyLog[]>(INITIAL_ACCURACY_LOGS);
   const [filterStage, setFilterStage] = useState<string>('all');
-  const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
@@ -145,16 +142,6 @@ export default function TrackerPage() {
     }
   };
 
-  // New log form state
-  const [newStage, setNewStage] = useState<string>('16 Besar');
-  const [newHome, setNewHome] = useState<string>('Portugal 🇵🇹');
-  const [newAway, setNewAway] = useState<string>('Spanyol 🇪🇸');
-  const [newPredWin, setNewPredWin] = useState<string>('32');
-  const [newPredDraw, setNewPredDraw] = useState<string>('26');
-  const [newPredLoss, setNewPredLoss] = useState<string>('42');
-  const [newActualOutcome, setNewActualOutcome] = useState<'win' | 'draw' | 'loss'>('loss');
-  const [newActualScore, setNewActualScore] = useState<string>('1 - 2');
-
   // Calculate overall KPIs
   const totalMatches = logs.length;
   const avgBrier = totalMatches > 0 
@@ -167,37 +154,6 @@ export default function TrackerPage() {
     if (filterStage === 'all') return true;
     return l.stage.toLowerCase() === filterStage.toLowerCase();
   });
-
-  const handleAddResult = (e: React.FormEvent) => {
-    e.preventDefault();
-    const pW = parseFloat(newPredWin) / 100;
-    const pD = parseFloat(newPredDraw) / 100;
-    const pL = parseFloat(newPredLoss) / 100;
-
-    const brier = calculateBrierScore(pW, pD, pL, newActualOutcome);
-    
-    // Determine if correct pick (did model pick the highest prob for the actual outcome?)
-    const maxProb = Math.max(pW, pD, pL);
-    let isCorrect = false;
-    if (newActualOutcome === 'win' && maxProb === pW) isCorrect = true;
-    if (newActualOutcome === 'draw' && maxProb === pD) isCorrect = true;
-    if (newActualOutcome === 'loss' && maxProb === pL) isCorrect = true;
-
-    const newEntry: AccuracyLog = {
-      matchId: `custom_${Date.now()}`,
-      stage: newStage,
-      homeTeam: newHome,
-      awayTeam: newAway,
-      predictedProb: { win: pW, draw: pD, loss: pL },
-      actualResult: newActualOutcome,
-      actualScore: newActualScore,
-      brierScore: brier,
-      isCorrectPick: isCorrect
-    };
-
-    setLogs([newEntry, ...logs]);
-    setShowAddModal(false);
-  };
 
   return (
     <div className="space-y-12 pb-12">
@@ -220,15 +176,7 @@ export default function TrackerPage() {
             className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-sm transition-all shrink-0 cursor-pointer disabled:opacity-50"
           >
             <ArrowCounterClockwise className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>{isRefreshing ? 'Mengambil Data Live...' : '🔄 Refresh Data Live (Ambil Hasil Baru)'}</span>
-          </button>
-
-          <button
-            onClick={() => setShowAddModal(!showAddModal)}
-            className="flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-sm transition-all shrink-0 cursor-pointer"
-          >
-            <PlusCircle className="w-4 h-4" />
-            <span>Input Hasil Laga Baru</span>
+            <span>{isRefreshing ? 'Mengambil Data...' : '🔄 Refresh Data'}</span>
           </button>
         </div>
       </div>
@@ -298,123 +246,7 @@ export default function TrackerPage() {
 
       </div>
 
-      {/* NEW RESULT MODAL FORM */}
-      {showAddModal && (
-        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-300 shadow-xl space-y-6 animate-fadeIn">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-200">
-            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <PlusCircle className="w-5 h-5 text-emerald-600" />
-              <span>Input Hasil Laga Riil &amp; Evaluasi Brier Score</span>
-            </h3>
-            <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-700">
-              <XCircle className="w-6 h-6" />
-            </button>
-          </div>
 
-          <form onSubmit={handleAddResult} className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
-            
-            <div className="space-y-1">
-              <label className="text-slate-700 font-bold">Babak Turnamen</label>
-              <select 
-                value={newStage} 
-                onChange={e => setNewStage(e.target.value)}
-                className="w-full bg-white px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:border-blue-600 focus:outline-none"
-              >
-                <option value="16 Besar">16 Besar</option>
-                <option value="Perempat Final">Perempat Final (8 Besar)</option>
-                <option value="Semifinal">Semifinal</option>
-                <option value="Final">Final Piala Dunia</option>
-              </select>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-slate-700 font-bold">Team A (Home)</label>
-              <input 
-                type="text" 
-                value={newHome} 
-                onChange={e => setNewHome(e.target.value)}
-                placeholder="Contoh: Portugal 🇵🇹"
-                className="w-full bg-white px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:border-blue-600 focus:outline-none" 
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-slate-700 font-bold">Team B (Away)</label>
-              <input 
-                type="text" 
-                value={newAway} 
-                onChange={e => setNewAway(e.target.value)}
-                placeholder="Contoh: Spanyol 🇪🇸"
-                className="w-full bg-white px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:border-blue-600 focus:outline-none" 
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-emerald-700 font-bold">Prediksi Win Team A (%)</label>
-              <input 
-                type="number" 
-                value={newPredWin} 
-                onChange={e => setNewPredWin(e.target.value)}
-                className="w-full bg-white px-3 py-2 rounded-lg border border-emerald-300 text-slate-900 font-bold focus:border-emerald-600 focus:outline-none" 
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-slate-700 font-bold">Prediksi Seri / Penalti (%)</label>
-              <input 
-                type="number" 
-                value={newPredDraw} 
-                onChange={e => setNewPredDraw(e.target.value)}
-                className="w-full bg-white px-3 py-2 rounded-lg border border-slate-300 text-slate-900 font-bold focus:border-blue-600 focus:outline-none" 
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-blue-700 font-bold">Prediksi Win Team B (%)</label>
-              <input 
-                type="number" 
-                value={newPredLoss} 
-                onChange={e => setNewPredLoss(e.target.value)}
-                className="w-full bg-white px-3 py-2 rounded-lg border border-blue-300 text-slate-900 font-bold focus:border-blue-600 focus:outline-none" 
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-amber-700 font-bold">Hasil Akhir Aktual</label>
-              <select 
-                value={newActualOutcome} 
-                onChange={e => setNewActualOutcome(e.target.value as any)}
-                className="w-full bg-white px-3 py-2 rounded-lg border border-amber-300 text-slate-900 font-bold focus:border-amber-600 focus:outline-none"
-              >
-                <option value="win">Team A Menang</option>
-                <option value="draw">Seri (90 Menit)</option>
-                <option value="loss">Team B Menang</option>
-              </select>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-slate-700 font-bold">Skor Akhir (Exact Score)</label>
-              <input 
-                type="text" 
-                value={newActualScore} 
-                onChange={e => setNewActualScore(e.target.value)}
-                placeholder="Contoh: 1 - 2"
-                className="w-full bg-white px-3 py-2 rounded-lg border border-slate-300 text-slate-900 focus:border-blue-600 focus:outline-none" 
-              />
-            </div>
-
-            <div className="flex items-end">
-              <button
-                type="submit"
-                className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all shadow-sm"
-              >
-                + Simpan &amp; Evaluasi
-              </button>
-            </div>
-
-          </form>
-        </div>
-      )}
 
       {/* HISTORICAL ACCURACY AUDIT TABLE */}
       <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
