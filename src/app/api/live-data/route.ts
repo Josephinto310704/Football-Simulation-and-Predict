@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 // football-data.org API key — supports WC 2026 (free tier)
-const FOOTBALLDATA_KEY = process.env.FOOTBALLDATA_KEY || '653e42e256d245ebb65f405f16408c26';
+const FOOTBALLDATA_KEY = process.env.FOOTBALLDATA_KEY || '';
 
 // TLA (3-letter code from football-data.org) → internal team ID
 const TLA_TO_ID: Record<string, string> = {
@@ -122,6 +122,7 @@ export type LiveMatchData = {
 };
 
 async function fetchFromFootballData(): Promise<LiveMatchData[]> {
+  if (!FOOTBALLDATA_KEY) return [];
   try {
     const res = await fetch(
       'https://api.football-data.org/v4/competitions/WC/matches?stage=LAST_16',
