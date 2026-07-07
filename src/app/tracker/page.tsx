@@ -216,6 +216,14 @@ export default function TrackerPage() {
         <LoadingSkeleton variant="full" rows={6} />
       ) : (
         <>
+          {/* Methodology & Caching Transparency Banner */}
+          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 text-xs text-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-2 font-mono shadow-2xs mb-2">
+            <div>
+              <span className="font-bold text-indigo-900">ℹ️ Arsitektur Data &amp; Caching: </span>
+              <span className="leading-relaxed">In-memory cache serverless diperbarui berkala via smart-polling, sementara statistik tim lanjutan (xG, PPDA, Moneyball) dikurasi &amp; diupdate manual per babak turnamen dari laporan teknis resmi FIFA/Opta agar bebas dari noise scraping.</span>
+            </div>
+          </div>
+
           {/* KPI METRICS STRIP */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             

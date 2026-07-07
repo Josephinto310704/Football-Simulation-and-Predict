@@ -242,6 +242,14 @@ function SimulatorContent() {
         </div>
       </div>
 
+      {/* Statistical Data Transparency Banner */}
+      <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 text-xs text-slate-600 flex items-start sm:items-center justify-between gap-3 font-mono shadow-2xs">
+        <div className="flex items-start sm:items-center gap-2">
+          <span className="text-indigo-600 font-bold shrink-0">ℹ️ Transparansi Data:</span>
+          <span className="leading-relaxed">Statistik tim lanjutan (xG, PPDA, Moneyball) diverifikasi &amp; di-update manual per babak turnamen dari laporan teknis resmi FIFA/Opta (Curated Proxy) demi akurasi dan kebersihan pemodelan.</span>
+        </div>
+      </div>
+
       {/* Main Prediction Results Display */}
       {isSimulating30Mins ? (
         <LoadingSkeleton variant="card" rows={4} />

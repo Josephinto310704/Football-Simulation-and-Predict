@@ -2,6 +2,7 @@ import { Match, AccuracyLog, PreMatchReport } from '@/types';
 import { getTeam } from './teams';
 import { predictMatch } from '../engine/poisson';
 import { calculateNeuralEnsemble } from '../engine/pythagorean-fnn';
+import { calculateCombinedProbability } from '../engine/parlay';
 
 // Round of 16 Fixtures (Pairs of Team IDs - Aligned 100% with footballdata.io API Season 618)
 export const ROUND_OF_16_FIXTURES: [string, string][] = [
@@ -491,6 +492,14 @@ export function generatePreMatchReport(homeId: string, awayId: string): PreMatch
     contextStr = 'Laga 8 Besar Perempat Final Piala Dunia 2026';
   }
 
+  const parlayLegs = [
+    { leg: 'Leg 1 (Total Gol)', market: 'Over/Under Total Gol', pick: isMexEng ? 'Over 2.5 Gol' : 'Under 2.5 Gol', prob: '68.0%' },
+    { leg: 'Leg 2 (Corner)', market: 'Total Corner', pick: 'Over 8.5 Corners', prob: '61.0%' },
+    { leg: 'Leg 3 (Disiplin)', market: 'Total Kartu Kuning', pick: 'Over 4.5 Kartu Kuning', prob: '66.5%' },
+    { leg: 'Leg 4 (Handicap)', market: 'Asian Handicap', pick: `${favName} +0.25 (atau DNB)`, prob: '72.0%' }
+  ];
+  const parlayCalc = calculateCombinedProbability(parlayLegs, -3.7);
+
   return {
     matchId: `${homeId}_${awayId}`,
     title: `Pre-Match Analytical Report: ${home.flag} ${home.name} vs ${away.flag} ${away.name}`,
@@ -627,13 +636,8 @@ export function generatePreMatchReport(homeId: string, awayId: string): PreMatch
         value: `4-Leg Parlay Kombinasi Lintas Pasar`,
         risk: 'Moderate',
         rationale: `Memanfaatkan korelasi statistik antara intensitas fisik tinggi (Corner & Kartu) pada fase gugur Piala Dunia.`,
-        legs: [
-          { leg: 'Leg 1 (Total Gol)', market: 'Over/Under Total Gol', pick: isMexEng ? 'Over 2.5 Gol' : 'Under 2.5 Gol', prob: '68.0%' },
-          { leg: 'Leg 2 (Corner)', market: 'Total Corner', pick: 'Over 8.5 Corners', prob: '61.0%' },
-          { leg: 'Leg 3 (Disiplin)', market: 'Total Kartu Kuning', pick: 'Over 4.5 Kartu Kuning', prob: '66.5%' },
-          { leg: 'Leg 4 (Handicap)', market: 'Asian Handicap', pick: `${favName} +0.25 (atau DNB)`, prob: '72.0%' }
-        ],
-        combinedProb: '16.2% (Estimated Combined Odds ~6.15)'
+        legs: parlayLegs,
+        combinedProb: parlayCalc.formattedString
       }
     },
     squadNews: {

@@ -1,5 +1,6 @@
 import { Team } from '@/types';
 import { enrichTeamsWithMoneyball } from '../engine/moneyball';
+import { getDynamicTeamStats } from '../engine/stats-sync';
 
 // Raw analytical data for the 16 active knockout stage teams of World Cup 2026
 const rawTeams: Team[] = [
@@ -368,18 +369,20 @@ const ISO_MAP: Record<string, string> = {
   egy: 'eg'
 };
 
-// Automatically enrich teams with Moneyball calculation and Flagpedia API URLs
+// Automatically enrich teams with Moneyball calculation, dynamic statistical sync override, and Flagpedia API URLs
 export const TEAMS: Team[] = enrichTeamsWithMoneyball(rawTeams).map(t => {
   const iso = ISO_MAP[t.id] || t.id;
+  const dyn = getDynamicTeamStats(t);
   return {
-    ...t,
+    ...dyn,
     isoCode: iso,
     flagUrl: `https://flagcdn.com/w80/${iso}.png`
   };
 });
 
-// Helper function to get team by ID or Code
+// Helper function to get team by ID or Code with live statistical overrides
 export function getTeam(idOrCode: string): Team | undefined {
   const lower = idOrCode.toLowerCase();
-  return TEAMS.find(t => t.id === lower || t.code.toLowerCase() === lower);
+  const found = TEAMS.find(t => t.id === lower || t.code.toLowerCase() === lower);
+  return found ? getDynamicTeamStats(found) : undefined;
 }
