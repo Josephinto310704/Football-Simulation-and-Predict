@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   CheckCircle, 
   Target, 
@@ -28,9 +28,41 @@ export default function TrackerPage() {
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
-  const handleRefreshLiveData = async () => {
-    setIsRefreshing(true);
-    setSyncStatus(null);
+  // Load from localStorage on mount & auto-sync live data silently
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('wc2026_accuracy_logs_v3');
+      if (saved) {
+        const parsed: AccuracyLog[] = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const merged = [...INITIAL_ACCURACY_LOGS];
+          for (const item of parsed) {
+            if (!merged.some(m => m.matchId === item.matchId || (m.homeTeam === item.homeTeam && m.awayTeam === item.awayTeam))) {
+              merged.unshift(item);
+            }
+          }
+          setLogs(merged);
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+    // Auto trigger live refresh silently on page load
+    handleRefreshLiveData(true);
+  }, []);
+
+  // Save to localStorage whenever logs change
+  useEffect(() => {
+    try {
+      localStorage.setItem('wc2026_accuracy_logs_v3', JSON.stringify(logs));
+    } catch (e) {
+      // ignore
+    }
+  }, [logs]);
+
+  const handleRefreshLiveData = async (silent = false) => {
+    if (!silent) setIsRefreshing(true);
+    if (!silent) setSyncStatus(null);
     try {
       const res = await fetch('/api/live-data');
       const json = await res.json();
@@ -45,7 +77,8 @@ export default function TrackerPage() {
             (l.homeTeam.toLowerCase().includes(m.homeTeamId) && l.awayTeam.toLowerCase().includes(m.awayTeamId)) ||
             (l.matchId === `live_${m.matchKey}`) ||
             (l.matchId === m.fixtureId?.toString()) ||
-            (m.matchKey === 'por_esp' && l.homeTeam.toLowerCase().includes('portugal') && l.awayTeam.toLowerCase().includes('spanyol'))
+            (m.matchKey === 'por_esp' && l.homeTeam.toLowerCase().includes('portugal') && l.awayTeam.toLowerCase().includes('spanyol')) ||
+            (m.matchKey === 'usa_bel' && l.homeTeam.toLowerCase().includes('amerika') && l.awayTeam.toLowerCase().includes('belgia'))
           );
 
           if (!alreadyExists) {
@@ -53,9 +86,7 @@ export default function TrackerPage() {
             let homeName = m.homeTLA;
             let awayName = m.awayTLA;
             if (m.matchKey === 'por_esp') {
-              homeName = 'Portugal 🇵🇹';
-              awayName = 'Spanyol 🇪🇸';
-              pW = 0.31; pD = 0.27; pL = 0.42; // Spanyol favored in Dixon-Coles Poisson model
+              homeName = 'Portugal 🇵🇹'; awayName = 'Spanyol 🇪🇸'; pW = 0.31; pD = 0.27; pL = 0.42;
             } else if (m.matchKey === 'can_mar') {
               homeName = 'Kanada 🇨🇦'; awayName = 'Maroko 🇲🇦'; pW = 0.22; pD = 0.26; pL = 0.52;
             } else if (m.matchKey === 'mex_eng') {
@@ -64,6 +95,12 @@ export default function TrackerPage() {
               homeName = 'Brasil 🇧🇷'; awayName = 'Norwegia 🇳🇴'; pW = 0.45; pD = 0.25; pL = 0.30;
             } else if (m.matchKey === 'par_fra') {
               homeName = 'Paraguay 🇵🇾'; awayName = 'Prancis 🇫🇷'; pW = 0.18; pD = 0.26; pL = 0.56;
+            } else if (m.matchKey === 'usa_bel') {
+              homeName = 'Amerika Serikat 🇺🇸'; awayName = 'Belgia 🇧🇪'; pW = 0.32; pD = 0.26; pL = 0.42;
+            } else if (m.matchKey === 'sui_col') {
+              homeName = 'Swiss 🇨🇭'; awayName = 'Kolombia 🇨🇴'; pW = 0.38; pD = 0.28; pL = 0.34;
+            } else if (m.matchKey === 'arg_egy') {
+              homeName = 'Argentina 🇦🇷'; awayName = 'Mesir 🇪🇬'; pW = 0.72; pD = 0.19; pL = 0.09;
             }
 
             const actualOutcome = m.homeScore > m.awayScore ? 'win' : m.homeScore < m.awayScore ? 'loss' : 'draw';
@@ -92,16 +129,18 @@ export default function TrackerPage() {
 
         setLogs(updatedLogs);
         const explanation = json.smartPolling?.statusExplanation ? ` [Smart Polling: ${json.smartPolling.statusExplanation}]` : '';
-        if (newLogsAdded > 0) {
-          setSyncStatus(`⚡ SYNC LIVE BERHASIL: Mengambil & mengevaluasi ${newLogsAdded} hasil laga baru!${explanation}`);
-        } else {
-          setSyncStatus(`✅ DATA UP TO DATE: Seluruh laga yang selesai sudah terverifikasi.${explanation}`);
+        if (!silent) {
+          if (newLogsAdded > 0) {
+            setSyncStatus(`⚡ SYNC LIVE BERHASIL: Mengambil & mengevaluasi ${newLogsAdded} hasil laga baru!${explanation}`);
+          } else {
+            setSyncStatus(`✅ DATA UP TO DATE: Seluruh laga yang selesai sudah terverifikasi.${explanation}`);
+          }
         }
       }
     } catch (err) {
-      setSyncStatus('⚠️ Gagal terhubung ke server live data. Silakan coba beberapa saat lagi.');
+      if (!silent) setSyncStatus('⚠️ Gagal terhubung ke server live data. Silakan coba beberapa saat lagi.');
     } finally {
-      setIsRefreshing(false);
+      if (!silent) setIsRefreshing(false);
     }
   };
 

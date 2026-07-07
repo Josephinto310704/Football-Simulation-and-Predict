@@ -85,7 +85,11 @@ export const MATCHES: Match[] = [
     date: '7 Juli 2026',
     time: '00:00 WIB',
     venue: 'Lumen Field, Seattle',
-    status: 'scheduled'
+    status: 'completed',
+    homeScore: 1,
+    awayScore: 4,
+    xGHome: 1.10,
+    xGAway: 2.85
   },
   {
     id: 'm106',
@@ -200,6 +204,17 @@ export const INITIAL_ACCURACY_LOGS: AccuracyLog[] = [
     actualResult: 'loss', // Away win for England!
     actualScore: '2 - 3',
     brierScore: 0.0985,
+    isCorrectPick: true
+  },
+  {
+    matchId: 'm105',
+    stage: '16 Besar',
+    homeTeam: 'Amerika Serikat 🇺🇸',
+    awayTeam: 'Belgia 🇧🇪',
+    predictedProb: { win: 0.32, draw: 0.26, loss: 0.42 },
+    actualResult: 'loss', // Belgia Menang 4-1 FT (Away Win)
+    actualScore: '1 - 4',
+    brierScore: 0.1688,
     isCorrectPick: true
   },
   {
