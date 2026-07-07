@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Heart, 
   Gift, 
@@ -10,9 +11,6 @@ import {
   ArrowSquareOut, 
   X, 
   Sparkle, 
-  Cpu, 
-  Database, 
-  Lightning, 
   QrCode, 
   Trophy,
   Coins
@@ -25,8 +23,13 @@ interface DonasiModalProps {
 
 export default function DonasiModal({ isOpen, onClose }: DonasiModalProps) {
   const [copiedAccount, setCopiedAccount] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!isOpen || !mounted) return null;
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -36,13 +39,14 @@ export default function DonasiModal({ isOpen, onClose }: DonasiModalProps) {
     }, 2000);
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
-      {/* Modal Card */}
-      <div 
-        className="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-lg w-full overflow-hidden transform transition-all animate-scaleUp max-h-[90vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] overflow-y-auto bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
+      <div className="flex min-h-full items-center justify-center p-4 sm:p-6 text-center">
+        {/* Modal Card */}
+        <div 
+          className="w-full max-w-lg overflow-hidden rounded-3xl bg-white text-left shadow-2xl transition-all animate-scaleUp border border-slate-100"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Header with Gradient Background */}
         <div className="relative bg-gradient-to-r from-rose-500 via-pink-600 to-amber-500 p-6 sm:p-8 text-white">
           <button
@@ -187,25 +191,6 @@ export default function DonasiModal({ isOpen, onClose }: DonasiModalProps) {
               </button>
             </div>
           </div>
-
-          {/* Impact Notice */}
-          <div className="space-y-2.5 pt-1">
-            <h4 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Lightning className="w-4 h-4 text-amber-500" />
-              <span>Ke Mana Dana Donasi Dialokasikan?</span>
-            </h4>
-            <div className="grid grid-cols-1 gap-2 text-xs text-slate-600">
-              <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-slate-50/80">
-                <Cpu className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
-                <span><strong>Sewa Cloud Server & GPU:</strong> Menjalankan 10.000 iterasi Monte Carlo & Poisson solver secara stabil saat trafik tinggi.</span>
-              </div>
-              <div className="flex items-start space-x-2.5 p-2.5 rounded-xl bg-slate-50/80">
-                <Database className="w-4 h-4 text-indigo-600 mt-0.5 shrink-0" />
-                <span><strong>Akses Data Real-Time:</strong> Pembaruan otomatis parameter xG, cedera pemain, dan odds pasar hingga final turnamen 2026.</span>
-              </div>
-            </div>
-          </div>
-
         </div>
 
         {/* Modal Footer */}
@@ -216,13 +201,15 @@ export default function DonasiModal({ isOpen, onClose }: DonasiModalProps) {
           </div>
           <button
             onClick={onClose}
-            className="w-full sm:w-auto px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-sm"
+            className="w-full sm:w-auto px-6 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-sm hover:shadow-md cursor-pointer"
           >
-            Tutup Windows
+            Close
           </button>
         </div>
 
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
